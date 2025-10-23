@@ -1,0 +1,43 @@
+# Derleme çıktıları
+*.obj
+*.o
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+*.out
+
+# Derleme klasörleri
+/build/
+bin/
+Debug/
+Release/
+x64/
+x86/
+
+# IDE / proje dosyaları
+.vscode/
+.idea/
+*.code-workspace
+*.sln
+*.vcxproj*
+*.user
+*.suo
+
+# Geçici dosyalar
+*.log
+*.tmp
+*.bak
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
+
+
+# ZIP ve geçici arşivler
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz

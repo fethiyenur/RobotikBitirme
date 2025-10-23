@@ -1,0 +1,17 @@
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_commond.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_filtersd.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_sample_consensusd.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_searchd.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_octreed.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_kdtreed.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\lz4d.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_iod.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\boost_iostreams-vc143-mt-gd-x64-1_89.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\zlibd1.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\bz2d.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\liblzma.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\zstd.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\pcl_io_plyd.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\boost_filesystem-vc143-mt-gd-x64-1_89.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\x64\Debug\libpng16d.dll
+C:\Users\fetik\OneDrive\Masaüstü\4_güz\bitirme\RadiusOutlierRemoval\RadiusOu.3fa6076d\x64\Debug\RadiusOu.EF65D92D.Up2Date
