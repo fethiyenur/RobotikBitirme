@@ -1,20 +1,38 @@
-// EmreAlaybeyogluDownsampling.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <pcl/io/ply_io.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/voxel_grid.h>
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    // Path to the unprocessed point cloud file
+    std::string input_path = "Raw_PointCloudData/4380-pointcloud.ply";
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
+
+    // Load the unprocessed point cloud file
+    if (pcl::io::loadPLYFile<pcl::PointXYZ>(input_path, *cloud) == -1)
+    {
+        PCL_ERROR("Could not open file: %s\n", input_path.c_str());
+        return -1;
+    }
+
+    std::cout << "PointCloud before filtering: " << cloud->size() << " points.\n";
+
+    // Create the VoxelGrid filter object
+    pcl::VoxelGrid<pcl::PointXYZ> sor;
+    sor.setInputCloud(cloud);
+    sor.setLeafSize(0.01f, 0.01f, 0.01f);
+    sor.filter(*cloud_filtered);
+
+    std::cout << "PointCloud after filtering: " << cloud_filtered->size() << " points.\n";
+
+    // Save the processed point cloud to Downsampled_PointCloudData folder
+    std::string output_path = "Downsampled_PointCloudData/4380-pointcloud_downsampled.ply";
+    pcl::io::savePLYFile(output_path, *cloud_filtered);
+
+    std::cout << "Filtered point cloud saved to: " << output_path << std::endl;
+
+    return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
