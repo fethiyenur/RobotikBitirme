@@ -1,0 +1,31 @@
+header: 
+  seq: 0
+  stamp: 254.387000000
+  frame_id: world
+child_frame_id: camera_depth_optical_frame
+transform: 
+  translation: 
+    x: -4.89986
+    y: -33.4194
+    z: 2.38436
+  rotation: 
+    x: 0.501465
+    y: -0.498531
+    z: 0.498531
+    w: -0.501465
+
+header: 
+  seq: 0
+  stamp: 254.387000000
+  frame_id: world
+child_frame_id: base_link
+transform: 
+  translation: 
+    x: -4.99998
+    y: -33.4
+    z: 2.20936
+  rotation: 
+    x: 1.32335e-07
+    y: -1.45959e-07
+    z: -0.705029
+    w: 0.709179
