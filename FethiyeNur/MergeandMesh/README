@@ -1,2 +1,4 @@
 step1.cpp: mesh, downsampling, sor ve ror kodları
 MeshView1.cpp: mesh oluşturulan kod alpha: 0.6 offset: 0.2
+Location2_merged_voxel_sor2__a0_6_o600.off: alpha: 0.6 offset:
+Location2_merged_voxel_sor2600.off:  alpha: 0.6 offset: 0.2
