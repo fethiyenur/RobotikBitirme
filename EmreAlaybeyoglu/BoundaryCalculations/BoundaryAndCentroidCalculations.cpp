@@ -111,6 +111,63 @@ void write_centroids_csv(
 }
 
 // =====================
+// WRITE CENTROIDS TO STL (as small spheres)
+// =====================
+void write_centroids_stl(
+    const std::vector<Point>& centroids,
+    const std::string& filename,
+    double sphere_radius = 0.05)
+{
+    std::ofstream out(filename);
+    out << "solid centroids\n";
+
+    for (const auto& center : centroids)
+    {
+        // Create a simple octahedron at each centroid point
+        // 6 vertices: top, bottom, and 4 around middle
+        Point top(center.x(), center.y(), center.z() + sphere_radius);
+        Point bottom(center.x(), center.y(), center.z() - sphere_radius);
+        Point front(center.x(), center.y() + sphere_radius, center.z());
+        Point back(center.x(), center.y() - sphere_radius, center.z());
+        Point right(center.x() + sphere_radius, center.y(), center.z());
+        Point left(center.x() - sphere_radius, center.y(), center.z());
+
+        // Create 8 triangular faces
+        // Top pyramid
+        std::vector<std::vector<Point>> faces = {
+            {top, front, right},
+            {top, right, back},
+            {top, back, left},
+            {top, left, front},
+            // Bottom pyramid
+            {bottom, right, front},
+            {bottom, back, right},
+            {bottom, left, back},
+            {bottom, front, left}
+        };
+
+        for (const auto& face : faces)
+        {
+            Vector v1 = face[1] - face[0];
+            Vector v2 = face[2] - face[0];
+            Vector n = CGAL::cross_product(v1, v2);
+            n = normalize(n);
+
+            out << "facet normal " << n.x() << " " << n.y() << " " << n.z() << "\n";
+            out << "  outer loop\n";
+            out << "    vertex " << face[0].x() << " " << face[0].y() << " " << face[0].z() << "\n";
+            out << "    vertex " << face[1].x() << " " << face[1].y() << " " << face[1].z() << "\n";
+            out << "    vertex " << face[2].x() << " " << face[2].y() << " " << face[2].z() << "\n";
+            out << "  endloop\n";
+            out << "endfacet\n";
+        }
+    }
+
+    out << "endsolid centroids\n";
+    out.close();
+}
+
+// =====================
 // WRITE BOUNDARY STL
 // =====================
 void write_boundary_stl(
@@ -170,6 +227,8 @@ int main()
         "finalBoundries.stl";
     const std::string output_csv =
         "boundaryCentroids.csv";
+    const std::string output_centroids_stl =
+        "centroidPoints.stl";
 
     Mesh mesh;
     if (!CGAL::IO::read_polygon_mesh(input_mesh, mesh))
@@ -202,6 +261,10 @@ int main()
     // Write centroids to CSV
     write_centroids_csv(centroids, output_csv);
     std::cout << "Centroids written to CSV:\n" << output_csv << "\n\n";
+
+    // Write centroids to STL (as small spheres)
+    write_centroids_stl(centroids, output_centroids_stl);
+    std::cout << "Centroids written to STL:\n" << output_centroids_stl << "\n\n";
 
     // Write boundary STL
     write_boundary_stl(boundary_loops, output_boundary);
