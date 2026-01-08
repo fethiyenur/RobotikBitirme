@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <cmath>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_3 Point;
@@ -31,16 +32,13 @@ std::vector<std::vector<Mesh::Halfedge_handle>> extract_boundary_loops(Mesh& mes
     std::vector<std::vector<Mesh::Halfedge_handle>> loops;
     std::set<Mesh::Halfedge_handle> visited;
 
-    // Find all boundary halfedges
     for (auto h = mesh.halfedges_begin(); h != mesh.halfedges_end(); ++h)
     {
         if (h->is_border() && visited.find(h) == visited.end())
         {
-            // Start a new loop
             std::vector<Mesh::Halfedge_handle> loop;
             Mesh::Halfedge_handle current = h;
 
-            // Follow the loop
             do {
                 loop.push_back(current);
                 visited.insert(current);
@@ -62,7 +60,6 @@ Point compute_loop_centroid(const std::vector<Mesh::Halfedge_handle>& loop)
     if (loop.empty())
         return Point(0, 0, 0);
 
-    // Collect unique vertices in this loop
     std::set<Mesh::Vertex_handle> vertices;
     for (auto h : loop)
     {
@@ -72,7 +69,6 @@ Point compute_loop_centroid(const std::vector<Mesh::Halfedge_handle>& loop)
     if (vertices.empty())
         return Point(0, 0, 0);
 
-    // Calculate average
     double sum_x = 0, sum_y = 0, sum_z = 0;
     for (auto v : vertices)
     {
@@ -87,31 +83,92 @@ Point compute_loop_centroid(const std::vector<Mesh::Halfedge_handle>& loop)
 }
 
 // =====================
+// COMPUTE LOOP RADIUS (average distance from centroid)
+// =====================
+double compute_loop_radius(
+    const std::vector<Mesh::Halfedge_handle>& loop,
+    const Point& centroid)
+{
+    if (loop.empty())
+        return 0.0;
+
+    std::set<Mesh::Vertex_handle> vertices;
+    for (auto h : loop)
+    {
+        vertices.insert(h->vertex());
+    }
+
+    if (vertices.empty())
+        return 0.0;
+
+    double sum_distance = 0.0;
+    for (auto v : vertices)
+    {
+        Point p = v->point();
+        double dist = std::sqrt(CGAL::squared_distance(p, centroid));
+        sum_distance += dist;
+    }
+
+    return sum_distance / vertices.size();
+}
+
+// =====================
+// COMPUTE LOOP MAX RADIUS
+// =====================
+double compute_loop_max_radius(
+    const std::vector<Mesh::Halfedge_handle>& loop,
+    const Point& centroid)
+{
+    if (loop.empty())
+        return 0.0;
+
+    std::set<Mesh::Vertex_handle> vertices;
+    for (auto h : loop)
+    {
+        vertices.insert(h->vertex());
+    }
+
+    if (vertices.empty())
+        return 0.0;
+
+    double max_distance = 0.0;
+    for (auto v : vertices)
+    {
+        Point p = v->point();
+        double dist = std::sqrt(CGAL::squared_distance(p, centroid));
+        if (dist > max_distance)
+            max_distance = dist;
+    }
+
+    return max_distance;
+}
+
+// =====================
 // WRITE CENTROIDS TO CSV
 // =====================
 void write_centroids_csv(
     const std::vector<Point>& centroids,
+    const std::vector<double>& radii,
     const std::string& filename)
 {
     std::ofstream out(filename);
 
-    // Write header
-    out << "Loop_ID   ,   X   ,   Y   ,   Z\n";
+    out << "Loop_ID,X,Y,Z,Radius\n";
 
-    // Write each centroid
     for (size_t i = 0; i < centroids.size(); ++i)
     {
-        out << (i + 1) << ", x = "
-            << centroids[i].x() << ", y = "
-            << centroids[i].y() << ", z = "
-            << centroids[i].z() << "\n";
+        out << (i + 1) << ","
+            << centroids[i].x() << ","
+            << centroids[i].y() << ","
+            << centroids[i].z() << ","
+            << radii[i] << "\n";
     }
 
     out.close();
 }
 
 // =====================
-// WRITE CENTROIDS TO STL (as small spheres)
+// WRITE CENTROIDS TO STL
 // =====================
 void write_centroids_stl(
     const std::vector<Point>& centroids,
@@ -123,8 +180,6 @@ void write_centroids_stl(
 
     for (const auto& center : centroids)
     {
-        // Create a simple octahedron at each centroid point
-        // 6 vertices: top, bottom, and 4 around middle
         Point top(center.x(), center.y(), center.z() + sphere_radius);
         Point bottom(center.x(), center.y(), center.z() - sphere_radius);
         Point front(center.x(), center.y() + sphere_radius, center.z());
@@ -132,14 +187,11 @@ void write_centroids_stl(
         Point right(center.x() + sphere_radius, center.y(), center.z());
         Point left(center.x() - sphere_radius, center.y(), center.z());
 
-        // Create 8 triangular faces
-        // Top pyramid
         std::vector<std::vector<Point>> faces = {
             {top, front, right},
             {top, right, back},
             {top, back, left},
             {top, left, front},
-            // Bottom pyramid
             {bottom, right, front},
             {bottom, back, right},
             {bottom, left, back},
@@ -168,7 +220,7 @@ void write_centroids_stl(
 }
 
 // =====================
-// WRITE BOUNDARY STL
+// WRITE BOUNDARY STL (only filtered loops)
 // =====================
 void write_boundary_stl(
     const std::vector<std::vector<Mesh::Halfedge_handle>>& loops,
@@ -185,16 +237,13 @@ void write_boundary_stl(
             Point p0 = h->vertex()->point();
             Point p1 = h->opposite()->vertex()->point();
 
-            // Edge direction
             Vector dir = p1 - p0;
 
-            // Create a perpendicular offset
             Vector perp = CGAL::cross_product(dir, Vector(0, 0, 1));
             if (perp.squared_length() == 0)
                 perp = CGAL::cross_product(dir, Vector(0, 1, 0));
             perp = normalize(perp) * thickness;
 
-            // Triangle vertices
             Point a = p0;
             Point b = p1;
             Point c = p0 + perp;
@@ -221,14 +270,13 @@ void write_boundary_stl(
 // =====================
 int main()
 {
-    const std::string input_mesh =
-        "inputMesh.stl";
-    const std::string output_boundary =
-        "finalBoundries.stl";
-    const std::string output_csv =
-        "boundaryCentroids.csv";
-    const std::string output_centroids_stl =
-        "centroidPoints.stl";
+    const std::string input_mesh = "inputMesh.stl";
+    const std::string output_boundary = "finalBoundries.stl";
+    const std::string output_csv = "boundaryCentroids.csv";
+    const std::string output_centroids_stl = "centroidPoints.stl";
+
+    // Minimum radius threshold in meters
+    const double MIN_RADIUS = 1.0;
 
     Mesh mesh;
     if (!CGAL::IO::read_polygon_mesh(input_mesh, mesh))
@@ -237,38 +285,66 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Extract separate boundary loops
     std::vector<std::vector<Mesh::Halfedge_handle>> boundary_loops = extract_boundary_loops(mesh);
 
-    std::cout << "Number of boundary loops found: " << boundary_loops.size() << "\n\n";
+    std::cout << "Total boundary loops found: " << boundary_loops.size() << "\n\n";
 
-    // Store centroids
-    std::vector<Point> centroids;
+    std::vector<Point> filtered_centroids;
+    std::vector<double> filtered_radii;
+    std::vector<std::vector<Mesh::Halfedge_handle>> filtered_loops;
 
-    // Calculate centroid for each loop
+    int filtered_count = 0;
+
     for (size_t i = 0; i < boundary_loops.size(); ++i)
     {
         Point centroid = compute_loop_centroid(boundary_loops[i]);
-        centroids.push_back(centroid);
+        double avg_radius = compute_loop_radius(boundary_loops[i], centroid);
+        double max_radius = compute_loop_max_radius(boundary_loops[i], centroid);
 
         std::cout << "=== BOUNDARY LOOP " << (i + 1) << " ===\n";
         std::cout << "Edges in loop: " << boundary_loops[i].size() << "\n";
-        std::cout << "Centroid X: " << centroid.x() << "\n";
-        std::cout << "Centroid Y: " << centroid.y() << "\n";
-        std::cout << "Centroid Z: " << centroid.z() << "\n\n";
+        std::cout << "Centroid: ("
+            << centroid.x() << ", "
+            << centroid.y() << ", "
+            << centroid.z() << ")\n";
+        std::cout << "Average Radius: " << avg_radius << " m\n";
+        std::cout << "Max Radius: " << max_radius << " m\n";
+
+        // Filter by radius
+        if (avg_radius >= MIN_RADIUS)
+        {
+            filtered_centroids.push_back(centroid);
+            filtered_radii.push_back(avg_radius);
+            filtered_loops.push_back(boundary_loops[i]);
+            std::cout << "✓ INCLUDED (radius >= " << MIN_RADIUS << " m)\n\n";
+        }
+        else
+        {
+            filtered_count++;
+            std::cout << "✗ FILTERED OUT (radius < " << MIN_RADIUS << " m)\n\n";
+        }
     }
 
-    // Write centroids to CSV
-    write_centroids_csv(centroids, output_csv);
-    std::cout << "Centroids written to CSV:\n" << output_csv << "\n\n";
+    std::cout << "========================================\n";
+    std::cout << "Total loops: " << boundary_loops.size() << "\n";
+    std::cout << "Filtered out: " << filtered_count << "\n";
+    std::cout << "Remaining loops: " << filtered_centroids.size() << "\n";
+    std::cout << "========================================\n\n";
 
-    // Write centroids to STL (as small spheres)
-    write_centroids_stl(centroids, output_centroids_stl);
-    std::cout << "Centroids written to STL:\n" << output_centroids_stl << "\n\n";
+    if (filtered_centroids.empty())
+    {
+        std::cout << "No boundary loops meet the radius criteria!\n";
+        return EXIT_SUCCESS;
+    }
 
-    // Write boundary STL
-    write_boundary_stl(boundary_loops, output_boundary);
-    std::cout << "Boundary STL written:\n" << output_boundary << std::endl;
+    write_centroids_csv(filtered_centroids, filtered_radii, output_csv);
+    std::cout << "Filtered centroids written to CSV:\n" << output_csv << "\n\n";
+
+    write_centroids_stl(filtered_centroids, output_centroids_stl);
+    std::cout << "Filtered centroids written to STL:\n" << output_centroids_stl << "\n\n";
+
+    write_boundary_stl(filtered_loops, output_boundary);
+    std::cout << "Filtered boundary STL written:\n" << output_boundary << std::endl;
 
     return EXIT_SUCCESS;
 }
