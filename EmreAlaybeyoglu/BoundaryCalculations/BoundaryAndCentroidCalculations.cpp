@@ -275,8 +275,8 @@ int main()
     const std::string output_csv = "boundaryCentroids.csv";
     const std::string output_centroids_stl = "centroidPoints.stl";
 
-    // Minimum radius threshold in meters
-    const double MIN_RADIUS = 1.0;
+    // Minimum radius threshold in meters *********
+    const double MIN_RADIUS = 1.2;
 
     Mesh mesh;
     if (!CGAL::IO::read_polygon_mesh(input_mesh, mesh))
